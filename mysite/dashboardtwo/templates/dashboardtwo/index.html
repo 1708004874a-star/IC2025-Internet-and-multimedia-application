@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Campus Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #1abc9c;
+            --light: #ecf0f1;
+            --dark: #34495e;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--primary), var(--dark));
+            color: white;
+            padding: 1.5rem 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+            border: none;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .card-header {
+            background: linear-gradient(to right, var(--secondary), var(--accent));
+            color: white;
+            font-weight: 600;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 1rem 1.5rem;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 1.5rem;
+        }
+        
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--secondary);
+        }
+        
+        .temp-bg { background: linear-gradient(135deg, #ff9a9e, #fad0c4); }
+        .hum-bg { background: linear-gradient(135deg, #a1c4fd, #c2e9fb); }
+        .light-bg { background: linear-gradient(135deg, #f6d365, #fda085); }
+        .sound-bg { background: linear-gradient(135deg, #84fab0, #8fd3f4); }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            padding: 1rem;
+        }
+        
+        .filter-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .btn-filter {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-filter:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        .comparison-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .room-card {
+            border-left: 4px solid var(--secondary);
+            transition: all 0.3s ease;
+        }
+        
+        .room-card:hover {
+            border-left: 4px solid var(--accent);
+        }
+        
+        .room-title {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .parameter-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            display: inline-block;
+        }
+        
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+        
+        .parameter-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .param-btn {
+            background: #e9ecef;
+            border: none;
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            transition: all 0.2s ease;
+        }
+        
+        .param-btn.active, .param-btn:hover {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .location-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .location-btn {
+            background: #e9ecef;
+            border: none;
+            border-radius: 20px;
+            padding: 0.5rem 1.2rem;
+            transition: all 0.2s ease;
+        }
+        
+        .location-btn.active, .location-btn:hover {
+            background: var(--accent);
+            color: white;
+        }
+        
+        .data-refresh {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-align: right;
+            margin-top: 0.5rem;
+        }
+        
+        .comparison-chart-container {
+            height: 350px;
+            padding: 1rem;
+        }
+        
+        .minute-precision {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 0.3rem;
+        }
+        
+        .time-indicator {
+            display: inline-block;
+            background: rgba(52, 152, 219, 0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+        
+        .data-table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th {
+            background-color: #f1f5f9;
+            position: sticky;
+            top: 0;
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .data-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        
+        .data-table tr:hover {
+            background-color: #f1f5f9;
+        }
+        
+        .data-table .timestamp {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+        
+        .data-table .value {
+            font-weight: 600;
+            text-align: right;
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .section-title i {
+            margin-right: 0.75rem;
+            color: var(--secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1><i class="fas fa-university me-3"></i>Smart Campus Dashboard</h1>
+                    <p class="mb-0">Displaying last 20 data points with timestamps</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="d-inline-block bg-white text-dark p-2 rounded-pill">
+                        <i class="fas fa-clock me-2"></i>
+                        <span id="current-time">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Filter Section -->
+        <section class="filter-section">
+            <div class="row">
+                <div class="col-md-6">
+                    <h3><i class="fas fa-filter me-2"></i>Filter by Location</h3>
+                    <div class="location-selector">
+                        <button class="location-btn active" data-location="all">All Locations</button>
+                        <button class="location-btn" data-location="W311A">W311A</button>
+                        <button class="location-btn" data-location="W311B">W311B</button>
+                        <button class="location-btn" data-location="W502G">W502G</button>
+                        <button class="location-btn" data-location="HSC02">HSC02</button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h3><i class="fas fa-chart-line me-2"></i>Select Parameter</h3>
+                    <div class="parameter-controls">
+                        <button class="param-btn active" data-param="temp">Temperature</button>
+                        <button class="param-btn" data-param="hum">Humidity</button>
+                        <button class="param-btn" data-param="light">Light</button>
+                        <button class="param-btn" data-param="snd">Sound</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Overview -->
+        <section>
+            <h2 class="mb-4"><i class="fas fa-tachometer-alt me-2"></i>Current Environment Overview</h2>
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card temp-bg">
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-thermometer-half"></i></div>
+                            <div class="stat-value">24.5°C</div>
+                            <div class="stat-label">Temperature</div>
+                            <div class="minute-precision">
+                                <i class="fas fa-clock me-1"></i>
+                                Updated: <span class="time-indicator">14:25:36</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card hum-bg">
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-tint"></i></div>
+                            <div class="stat-value">45%</div>
+                            <div class="stat-label">Humidity</div>
+                            <div class="minute-precision">
+                                <i class="fas fa-clock me-1"></i>
+                                Updated: <span class="time-indicator">14:25:36</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card light-bg">
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-sun"></i></div>
+                            <div class="stat-value">68%</div>
+                            <div class="stat-label">Light Level</div>
+                            <div class="minute-precision">
+                                <i class="fas fa-clock me-1"></i>
+                                Updated: <span class="time-indicator">14:25:36</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card sound-bg">
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-volume-up"></i></div>
+                            <div class="stat-value">42 dB</div>
+                            <div class="stat-label">Sound Level</div>
+                            <div class="minute-precision">
+                                <i class="fas fa-clock me-1"></i>
+                                Updated: <span class="time-indicator">14:25:36</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Chart -->
+        <section>
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-chart-area me-2"></i>Last 20 Data Points</span>
+                    <div class="data-refresh">Updated: <span id="last-update">Just now</span></div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="trend-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Data Table -->
+        <section>
+            <div class="section-title">
+                <i class="fas fa-table"></i>
+                <h3>Detailed Data Points (Last 20 Records)</h3>
+            </div>
+            <div class="data-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Location</th>
+                            <th>Temperature (°C)</th>
+                            <th>Humidity (%)</th>
+                            <th>Light Level (%)</th>
+                            <th>Sound Level (dB)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-table-body">
+                        <!-- Data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Room Comparison -->
+        <section class="comparison-section">
+            <div class="section-title">
+                <i class="fas fa-balance-scale-left"></i>
+                <h3>Room Comparison (Latest Data)</h3>
+            </div>
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="comparison-chart-container">
+                                <canvas id="comparison-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card room-card mb-3">
+                        <div class="card-body">
+                            <h5 class="room-title">W311A <span class="badge bg-primary">14:25:36</span></h5>
+                            <div>
+                                <span class="parameter-badge bg-primary">Temp: 24.5°C</span>
+                                <span class="parameter-badge bg-info">Hum: 45%</span>
+                                <span class="parameter-badge bg-warning">Light: 68%</span>
+                                <span class="parameter-badge bg-success">Sound: 42dB</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card room-card mb-3">
+                        <div class="card-body">
+                            <h5 class="room-title">W502G <span class="badge bg-primary">14:25:42</span></h5>
+                            <div>
+                                <span class="parameter-badge bg-primary">Temp: 23.1°C</span>
+                                <span class="parameter-badge bg-info">Hum: 48%</span>
+                                <span class="parameter-badge bg-warning">Light: 72%</span>
+                                <span class="parameter-badge bg-success">Sound: 38dB</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card room-card">
+                        <div class="card-body">
+                            <h5 class="room-title">HSC02 <span class="badge bg-primary">14:25:51</span></h5>
+                            <div>
+                                <span class="parameter-badge bg-primary">Temp: 22.8°C</span>
+                                <span class="parameter-badge bg-info">Hum: 52%</span>
+                                <span class="parameter-badge bg-warning">Light: 65%</span>
+                                <span class="parameter-badge bg-success">Sound: 45dB</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Smart Campus Monitoring System</h5>
+                    <p>Displaying the last 20 data points with precise timestamps</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0">Data updates every 10 seconds</p>
+                    <p class="mb-0">© 2023 Smart Campus Initiative</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            document.getElementById('current-time').textContent = `${hours}:${minutes}:${seconds}`;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+        
+        // Generate last 20 timestamps with seconds precision
+        function generateTimestamps() {
+            const now = new Date();
+            const timestamps = [];
+            
+            for (let i = 19; i >= 0; i--) {
+                const time = new Date(now);
+                time.setSeconds(time.getSeconds() - i);
+                const hours = time.getHours().toString().padStart(2, '0');
+                const minutes = time.getMinutes().toString().padStart(2, '0');
+                const seconds = time.getSeconds().toString().padStart(2, '0');
+                timestamps.push(`${hours}:${minutes}:${seconds}`);
+            }
+            
+            return timestamps;
+        }
+        
+        // Generate random data for the last 20 points
+        function generateData(baseValue, variation) {
+            const data = [];
+            let current = baseValue;
+            
+            for (let i = 0; i < 20; i++) {
+                current = baseValue + (Math.random() * variation * 2 - variation);
+                data.push(parseFloat(current.toFixed(1)));
+            }
+            
+            return data;
+        }
+        
+        // Generate table data
+        function generateTableData() {
+            const locations = ['W311A', 'W311B', 'W502G', 'HSC02'];
+            const timestamps = generateTimestamps();
+            const tableBody = document.getElementById('data-table-body');
+            tableBody.innerHTML = '';
+            
+            for (let i = 0; i < 20; i++) {
+                const location = locations[Math.floor(Math.random() * locations.length)];
+                const temp = (22 + Math.random() * 3).toFixed(1);
+                const hum = (40 + Math.random() * 15).toFixed(1);
+                const light = (60 + Math.random() * 20).toFixed(1);
+                const snd = (35 + Math.random() * 15).toFixed(1);
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="timestamp">${timestamps[i]}</td>
+                    <td>${location}</td>
+                    <td class="value">${temp}°C</td>
+                    <td class="value">${hum}%</td>
+                    <td class="value">${light}%</td>
+                    <td class="value">${snd} dB</td>
+                `;
+                tableBody.appendChild(row);
+            }
+        }
+        
+        // Simulate data updates
+        function updateLastRefresh() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            document.getElementById('last-update').textContent = `${hours}:${minutes}:${seconds}`;
+            
+            // Update time indicators
+            document.querySelectorAll('.time-indicator').forEach(el => {
+                el.textContent = `${hours}:${minutes}:${seconds}`;
+            });
+        }
+        
+        // Chart.js charts
+        // Trend Chart
+        const trendCtx = document.getElementById('trend-chart').getContext('2d');
+        const trendChart = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: generateTimestamps(),
+                datasets: [{
+                    label: 'Temperature (°C)',
+                    data: generateData(24, 0.5),
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#e74c3c'
+                }, {
+                    label: 'Humidity (%)',
+                    data: generateData(45, 1),
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#3498db',
+                    hidden: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                return tooltipItems[0].label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Value'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Time (last 20 points)'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Comparison Chart
+        const compCtx = document.getElementById('comparison-chart').getContext('2d');
+        const compChart = new Chart(compCtx, {
+            type: 'bar',
+            data: {
+                labels: ['W311A', 'W311B', 'W502G', 'HSC02'],
+                datasets: [{
+                    label: 'Temperature (°C)',
+                    data: [24.5, 23.8, 23.1, 22.8],
+                    backgroundColor: 'rgba(231, 76, 60, 0.7)'
+                }, {
+                    label: 'Humidity (%)',
+                    data: [45, 47, 48, 52],
+                    backgroundColor: 'rgba(52, 152, 219, 0.7)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Value'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Location'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Filter controls
+        document.querySelectorAll('.param-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                document.querySelectorAll('.param-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                const param = this.getAttribute('data-param');
+                
+                // Update the trend chart based on selected parameter
+                if (param === 'temp') {
+                    trendChart.data.datasets[0].label = 'Temperature (°C)';
+                    trendChart.data.datasets[0].data = generateData(24, 0.5);
+                    trendChart.data.datasets[0].borderColor = '#e74c3c';
+                    trendChart.data.datasets[0].backgroundColor = 'rgba(231, 76, 60, 0.1)';
+                    trendChart.data.datasets[1].hidden = true;
+                } else if (param === 'hum') {
+                    trendChart.data.datasets[0].label = 'Humidity (%)';
+                    trendChart.data.datasets[0].data = generateData(45, 1);
+                    trendChart.data.datasets[0].borderColor = '#3498db';
+                    trendChart.data.datasets[0].backgroundColor = 'rgba(52, 152, 219, 0.1)';
+                    trendChart.data.datasets[1].hidden = true;
+                } else if (param === 'light') {
+                    trendChart.data.datasets[0].label = 'Light Level (%)';
+                    trendChart.data.datasets[0].data = generateData(65, 3);
+                    trendChart.data.datasets[0].borderColor = '#f39c12';
+                    trendChart.data.datasets[0].backgroundColor = 'rgba(243, 156, 18, 0.1)';
+                    trendChart.data.datasets[1].hidden = true;
+                } else if (param === 'snd') {
+                    trendChart.data.datasets[0].label = 'Sound Level (dB)';
+                    trendChart.data.datasets[0].data = generateData(42, 2);
+                    trendChart.data.datasets[0].borderColor = '#2ecc71';
+                    trendChart.data.datasets[0].backgroundColor = 'rgba(46, 204, 113, 0.1)';
+                    trendChart.data.datasets[1].hidden = true;
+                }
+                
+                trendChart.update();
+            });
+        });
+        
+        // Location filter
+        document.querySelectorAll('.location-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                document.querySelectorAll('.location-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                const location = this.getAttribute('data-location');
+                
+                // In a real app, this would filter the data
+                console.log('Filtering for location:', location);
+            });
+        });
+        
+        // Simulate live data updates every 10 seconds
+        setInterval(() => {
+            // Update time labels
+            const newLabels = generateTimestamps();
+            trendChart.data.labels = newLabels;
+            
+            // Update data with new values
+            const datasets = trendChart.data.datasets;
+            for (let i = 0; i < datasets.length; i++) {
+                if (!datasets[i].hidden) {
+                    const currentData = datasets[i].data;
+                    const baseValue = currentData[currentData.length - 1];
+                    const variation = datasets[i].label.includes('Temperature') ? 0.5 : 
+                                     datasets[i].label.includes('Humidity') ? 1 : 
+                                     datasets[i].label.includes('Light') ? 3 : 2;
+                    
+                    // Shift data and add new value
+                    currentData.shift();
+                    const newValue = baseValue + (Math.random() * variation * 2 - variation);
+                    currentData.push(parseFloat(newValue.toFixed(1)));
+                }
+            }
+            
+            // Update the chart
+            trendChart.update();
+            
+            // Update last refresh time
+            updateLastRefresh();
+            
+            // Update table data
+            generateTableData();
+        }, 10000); // Update every 10 seconds
+        
+        // Initial setup
+        updateLastRefresh();
+        generateTableData();
+    </script>
+</body>
+</html>

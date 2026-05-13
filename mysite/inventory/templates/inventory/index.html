@@ -1,0 +1,131 @@
+<!doctype HTML>
+<HTML lang="en">
+    <style>
+        table, th, td {
+            border:1px solid #2c3e50;
+        }
+        table.center {
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .container h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+    </style>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+        <title>Assignment 1</title>
+    </head>
+    <body class="p-3 mb-2 bg-light text-dark">
+        <div class="container">
+            <h2 class="text-center">Inventory Item(s)</h2>
+            <table class="table table-info table-striped center">
+                <tr class="table-primary">
+                    <th>Item_no</th>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Brand</th>
+                    <th>Unit price</th>
+                    <th>Stock</th>
+                    <th>Created Date</th>
+                </tr>
+                {% for item in item %}
+                <tr>
+                    <td>{{ item.item_no }}</td>
+                    <td>{{ item.type }}</td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.desription }}</td>
+                    <td>{{ item.brand }}</td>
+                    <td>{{ item.unit_price }}</td>
+                    <td>{{ item.stock }}</td>
+                    <td>{{ item.created_date }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="container">
+            <h2 class="text-center">Item(s) that the unit price is more than $4,000</h2>
+            <table class="table table-warning table-striped center">
+                <tr class="table-warning">
+                    <th>Item_no</th>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Brand</th>
+                    <th>Unit price</th>
+                    <th>Stock</th>
+                    <th>Created Date</th>
+                </tr>
+                {% for item in high_price_items %}
+                <tr>
+                    <td>{{ item.item_no }}</td>
+                    <td>{{ item.type }}</td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.desription }}</td>
+                    <td>{{ item.brand }}</td>
+                    <td>{{ item.unit_price }}</td>
+                    <td>{{ item.stock }}</td>
+                    <td>{{ item.created_date }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="container">
+            <h2 class="text-center">Item(s) that the created date is more than 5 years</h2>
+            <table class="table table-secondary table-striped center">
+                <tr class="table-secondary">
+                    <th>Item_no</th>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Brand</th>
+                    <th>Unit price</th>
+                    <th>Stock</th>
+                    <th>Created Date</th>
+                </tr>
+                {% for item in old_items %}
+                <tr>
+                    <td>{{ item.item_no }}</td>
+                    <td>{{ item.type }}</td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.desription }}</td>
+                    <td>{{ item.brand }}</td>
+                    <td>{{ item.unit_price }}</td>
+                    <td>{{ item.stock }}</td>
+                    <td>{{ item.created_date }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="container">
+            <h2 class="text-center">Inventory summary</h2>
+            <table class="table table-success table-striped center" style="width: 50%">
+                <tr class="table-success">
+                    <th>Type</th>
+                    <th>Total no</th>
+                </tr>
+                {% for summary in item_summary %}
+                <tr>
+                    <td>{{ summary.type }}</td>
+                    <td>{{ summary.total_no }}</td>
+                </tr>
+                {% endfor %}
+                <tr class="table-success">
+                    <th>Brand</th>
+                    <th>Total no</th>
+                </tr>
+                {% for summary in item_summary2 %}
+                <tr>
+                    <td>{{ summary.brand }}</td>
+                    <td>{{ summary.total_no }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </body>
+</HTML>

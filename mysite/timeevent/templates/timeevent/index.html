@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venue Event and Environmental Data Query</title>
+    <style>
+        
+        select[multiple] {
+            height: 150px;
+            padding: 5px;
+            font-size: 14px;
+        }
+        select[multiple] option {
+            padding: 4px 6px;
+        }
+        select[multiple] option:checked {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .selection-hint {
+            color: #666;
+            margin-top: 5px;
+            font-size: 12px;
+        }
+        .error {
+            color: red;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ffcccc;
+            background-color: #fff2f2;
+            border-radius: 4px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .venue-result {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .env-data {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+        }
+        
+        
+        .event-panel {
+            margin-top: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .event-header {
+            padding: 12px 15px;
+            background-color: #f0f7ff;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s;
+        }
+        .event-header:hover {
+            background-color: #e6f0ff;
+        }
+        .event-basic-info {
+            flex: 1;
+            min-width: 300px;
+        }
+        .event-header h3 {
+            margin: 0 0 8px 0;
+            font-size: 18px;
+            color: #2c3e50;
+        }
+        .event-meta {
+            color: #666;
+            font-size: 0.95em;
+        }
+        .toggle-icon {
+            font-size: 16px;
+            transition: transform 0.3s;
+            margin-left: 15px;
+        }
+        .toggle-icon.open {
+            transform: rotate(180deg);
+        }
+        .event-content {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s;
+        }
+        .event-content.open {
+            padding: 15px;
+            max-height: 500px;
+            transition: max-height 0.5s ease-in, padding 0.3s;
+        }
+        .debug-info {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #666;
+            font-style: italic;
+        }
+        .no-data {
+            color: #888;
+            font-style: italic;
+            padding: 10px 0;
+        }
+        .section-title {
+            color: #333;
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Venue Event and Environmental Data Query</h1>
+    
+    {% if error_message %}
+        <div class="error">{{ error_message }}</div>
+    {% endif %}
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="venue">Select Venue(s):</label>
+            <select id="venue" name="venue[]" multiple>
+                {% for venue in venues %}
+                    <option value="{{ venue.id }}">{{ venue.name }}</option>
+                {% endfor %}
+            </select>
+            <div class="selection-hint">Hold Ctrl/Cmd to select multiple venues</div>
+        </div>
+        
+        <div class="form-group">
+            <label for="start_datetime">Start Date & Time:</label>
+            <input type="datetime-local" id="start_datetime" name="start_datetime" value="{{ start_datetime }}">
+        </div>
+        
+        <div class="form-group">
+            <label for="end_datetime">End Date & Time:</label>
+            <input type="datetime-local" id="end_datetime" name="end_datetime" value="{{ end_datetime }}">
+        </div>
+        
+        <button type="submit" style="margin-top:10px;padding:8px 15px;background:#4CAF50;color:white;border:none;border-radius:4px;cursor:pointer;">Query</button>
+    </form>
+    
+    <div class="result">
+        {% if selected_venues %}
+            {% for venue, venue_data in selected_venues.items %}
+                <div class="venue-result">
+                    <h2 class="section-title">{{ venue.name }} Data ({{ start_datetime }} to {{ end_datetime }})</h2>
+                    
+                    {% if venue_data.events %}
+                        <h3>Events List</h3>
+                        {% for event in venue_data.events %}
+                            <div class="event-panel">
+                                <div class="event-header" onclick="toggleEvent(this)">
+                                    <div class="event-basic-info">
+                                        <h3>{{ event.event_name }}</h3>
+                                        <div class="event-meta">
+                                            <strong>Instructor:</strong> {{ event.instructor }} | 
+                                            <strong>Time:</strong> {{ event.start_datetime }} - {{ event.end_datetime }}
+                                        </div>
+                                    </div>
+                                    <span class="toggle-icon">▼</span>
+                                </div>
+                                <div class="event-content">
+                                    <h4>Environmental Data During This Event</h4>
+                                    
+                                    {% with event_id=event.id %}
+                                        {% for id, event_env in venue_data.event_environment_data.items %}
+                                            {% if id == event_id %}
+                                                <div class="debug-info">
+                                                    Sensor data points: {{ event_env.sensor_count }}
+                                                </div>
+                                                
+                                                {% if event_env.sensor_count > 0 %}
+                                                    <table>
+                                                        <tr>
+                                                            <th>Metric</th>
+                                                            <th>Average Value</th>
+                                                        </tr>
+                                                        {% if event_env.avg_temperature is not None %}
+                                                        <tr>
+                                                            <td>Temperature</td>
+                                                            <td>{{ event_env.avg_temperature|floatformat:1 }}°C</td>
+                                                        </tr>
+                                                        {% endif %}
+                                                        {% if event_env.avg_humidity is not None %}
+                                                        <tr>
+                                                            <td>Humidity</td>
+                                                            <td>{{ event_env.avg_humidity|floatformat:1 }}%</td>
+                                                        </tr>
+                                                        {% endif %}
+                                                        {% if event_env.avg_light is not None %}
+                                                        <tr>
+                                                            <td>Light</td>
+                                                            <td>{{ event_env.avg_light|floatformat:1 }}%</td>
+                                                        </tr>
+                                                        {% endif %}
+                                                        {% if event_env.avg_sound is not None %}
+                                                        <tr>
+                                                            <td>Sound</td>
+                                                            <td>{{ event_env.avg_sound|floatformat:1 }} dB</td>
+                                                        </tr>
+                                                        {% endif %}
+                                                    </table>
+                                                {% else %}
+                                                    <p class="no-data">No sensor data available for this event.</p>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endwith %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="no-data">No events found during this time period.</p>
+                    {% endif %}
+                    
+                    <div class="env-data">
+                        <h3 class="section-title">Overall Environmental Data for the Period</h3>
+                        <div class="debug-info">
+                            Total sensor data points: {{ venue_data.sensor_count }}
+                        </div>
+                        
+                        {% if venue_data.sensor_count > 0 %}
+                            <table>
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>Average Value</th>
+                                </tr>
+                                {% if venue_data.env_data.avg_temperature is not None %}
+                                <tr>
+                                    <td>Temperature</td>
+                                    <td>{{ venue_data.env_data.avg_temperature|floatformat:1 }}°C</td>
+                                </tr>
+                                {% endif %}
+                                {% if venue_data.env_data.avg_humidity is not None %}
+                                <tr>
+                                    <td>Humidity</td>
+                                    <td>{{ venue_data.env_data.avg_humidity|floatformat:1 }}%</td>
+                                </tr>
+                                {% endif %}
+                                {% if venue_data.env_data.avg_light is not None %}
+                                <tr>
+                                    <td>Light</td>
+                                    <td>{{ venue_data.env_data.avg_light|floatformat:1 }}%</td>
+                                </tr>
+                                {% endif %}
+                                {% if venue_data.env_data.avg_sound is not None %}
+                                <tr>
+                                    <td>Sound</td>
+                                    <td>{{ venue_data.env_data.avg_sound|floatformat:1 }} dB</td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        {% else %}
+                            <p class="no-data">No sensor data available for this venue in the selected period.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <script>
+        function toggleEvent(element) {
+            const content = element.nextElementSibling;
+            const icon = element.querySelector('.toggle-icon');
+            
+            if (content.classList.contains('open')) {
+                content.classList.remove('open');
+                icon.classList.remove('open');
+            } else {
+                content.classList.add('open');
+                icon.classList.add('open');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            
+        });
+    </script>
+</body>
+</html>
