@@ -74,4 +74,4 @@ python manage.py shell -c "from smart_campus import mqtt_handler"
 
 ## Hardware
 
-Sensor nodes use ESP8266 and M5StickC microcontrollers. Firmware source code is in the `firmware/` directory. The devices connect to the MQTT broker at `ia.ic.polyu.edu.hk` and publish to topic `iot/sensor-A`.
+Sensor nodes use ESP8266 and M5StickC microcontrollers. Firmware source code is in the `firmware/` directory. The devices connect to the MQTT broker at `ia.ic.polyu.edu.hk` and publish to topic `iot/sensor-A`.   
