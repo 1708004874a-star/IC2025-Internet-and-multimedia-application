@@ -24,7 +24,5 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls')),
     path('smart_campus/', include('smart_campus.urls')),
     path('dashboardtwo/', include('dashboardtwo.urls')),
-    path('dashboard_2nd/', include('dashboard_2nd.urls')),
     path('timeevent/', include('timeevent.urls')),
-    path('checkpoint2/', include('checkpoint2.urls')),
 ]

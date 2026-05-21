@@ -43,10 +43,7 @@ INSTALLED_APPS = [
     'dashboard',
     'smart_campus',
     'dashboardtwo',
-    'dashboard_2nd',
-    'sensor',
     'timeevent',
-    'checkpoint2'
 ]
 
 MIDDLEWARE = [

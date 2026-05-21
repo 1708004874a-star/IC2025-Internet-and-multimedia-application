@@ -1,4 +1,6 @@
 from django.shortcuts import render
+from django.http import JsonResponse
+from django.core import serializers
 from .models import SensorData
 from django.db.models import Avg, Count, Max
 from django.utils import timezone
@@ -7,13 +9,12 @@ from . import mqtt_handler
 
 
 def index(request):
-    
+
     location = request.GET.get('location', '')
     node_id = request.GET.get('node_id', '')
     start_date = request.GET.get('start_date', '')
     end_date = request.GET.get('end_date', '')
-    
-    
+
     sensor_data = SensorData.objects.all().order_by("-date_created")
     
     
