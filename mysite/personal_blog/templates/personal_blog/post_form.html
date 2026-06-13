@@ -1,0 +1,64 @@
+{% extends "personal_blog/base.html" %}
+
+{% block title %}{% if form.instance.pk %}Edit{% else %}New{% endif %} Post - My Blog{% endblock %}
+
+{% block content %}
+    <nav class="mb-3">
+        <a href="{% url 'personal_blog:post_list' %}" class="text-decoration-none">
+            &larr; Back to Posts
+        </a>
+    </nav>
+
+    <h1 class="mb-4">
+        {% if form.instance.pk %}Edit Post{% else %}Create New Post{% endif %}
+    </h1>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label for="{{ form.title.id_for_label }}" class="form-label">Title</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <div class="text-danger small mt-1">{{ form.title.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.content.id_for_label }}" class="form-label">Content (Markdown supported)</label>
+                    {{ form.content }}
+                    {% if form.content.errors %}
+                        <div class="text-danger small mt-1">{{ form.content.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.category.id_for_label }}" class="form-label">Category</label>
+                        {{ form.category }}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.tags.id_for_label }}" class="form-label">Tags (hold Ctrl to select multiple)</label>
+                        {{ form.tags }}
+                    </div>
+                </div>
+
+                <div class="mb-3 form-check">
+                    {{ form.is_published }}
+                    <label class="form-check-label" for="{{ form.is_published.id_for_label }}">
+                        Publish immediately
+                    </label>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="{% url 'personal_blog:post_list' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        {% if form.instance.pk %}Update{% else %}Create{% endif %} Post
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

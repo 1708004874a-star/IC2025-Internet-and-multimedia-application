@@ -1,0 +1,34 @@
+{% extends "personal_blog/base.html" %}
+
+{% block title %}Delete Post - My Blog{% endblock %}
+
+{% block content %}
+    <nav class="mb-3">
+        <a href="{% url 'personal_blog:post_detail' post.pk %}" class="text-decoration-none">
+            &larr; Back to Post
+        </a>
+    </nav>
+
+    <h1 class="mb-4">Delete Post</h1>
+
+    <div class="card">
+        <div class="card-body">
+            <p class="card-text">
+                Are you sure you want to delete the post titled <strong>"{{ post.title }}"</strong>?
+            </p>
+            <p class="text-danger">This action cannot be undone.</p>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="{% url 'personal_blog:post_detail' post.pk %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-danger">
+                        Confirm Delete
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

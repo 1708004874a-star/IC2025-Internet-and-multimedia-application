@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+*.zip
+
+# database intentionally NOT published (contains auth_user hashes/emails)
+db.sqlite3

@@ -1,0 +1,56 @@
+{% extends "personal_blog/base.html" %}
+
+{% block title %}{{ post.title }} - My Blog{% endblock %}
+
+{% block content %}
+    <article>
+        <nav class="mb-3">
+            <a href="{% url 'personal_blog:post_list' %}" class="text-decoration-none">
+                &larr; Back to Posts
+            </a>
+        </nav>
+
+        <h1 class="mb-3">{{ post.title }}</h1>
+
+        <p class="text-muted mb-4">
+            <small>
+                Published on {{ post.publication_date|date:"F j, Y" }}
+                {% if post.category %}
+                    in <a href="{% url 'personal_blog:category_posts' post.category.slug %}" class="text-decoration-none">
+                        {{ post.category.name }}
+                    </a>
+                {% endif %}
+                {% if post.author %}
+                    by {{ post.author.username }}
+                {% endif %}
+            </small>
+        </p>
+
+        {% if post.tags.all %}
+            <div class="mb-4">
+                {% for tag in post.tags.all %}
+                    <a href="{% url 'personal_blog:tag_posts' tag.slug %}" class="badge bg-secondary tag-badge text-decoration-none">
+                        #{{ tag.name }}
+                    </a>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="post-content">
+                    {{ rendered_content|safe }}
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-group" role="group">
+            <a href="{% url 'personal_blog:post_update' post.pk %}" class="btn btn-outline-primary">
+                Edit Post
+            </a>
+            <a href="{% url 'personal_blog:post_delete' post.pk %}" class="btn btn-outline-danger">
+                Delete Post
+            </a>
+        </div>
+    </article>
+{% endblock %}
