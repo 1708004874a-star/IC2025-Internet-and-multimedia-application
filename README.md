@@ -2,6 +2,16 @@
 
 An IoT project that monitors temperature, humidity, light, and sound across campus spaces. Sensor devices automatically collect and transmit data via MQTT. Data is stored and presented through a Django web dashboard with filtering, alerts, and real-time visualization.
 
+## Screenshots
+
+**Main sensor dashboard** (`/smart_campus/`) — automatic alerts, environment averages, filtering, and paginated sensor readings:
+
+![Smart Campus main dashboard](screenshots/smart-campus-dashboard.png)
+
+**Interactive dashboard** (`/dashboardtwo/`) — live Chart.js line chart and room comparison, updating every 10 seconds:
+
+![Interactive dashboard](screenshots/interactive-dashboard.png)
+
 ## Project Structure
 
 ```
@@ -31,6 +41,7 @@ An IoT project that monitors temperature, humidity, light, and sound across camp
 │   │   └── LedMatrix.cpp       # LED matrix implementation
 │   └── M5StickC/               # M5StickC sensor node
 │       └── M5StickC_Final.ino  # Main firmware
+├── screenshots/                # Dashboard screenshots
 ├── .gitignore
 └── README.md
 ```
